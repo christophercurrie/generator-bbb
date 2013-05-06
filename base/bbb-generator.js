@@ -70,7 +70,7 @@ function Generator(args, options, config) {
 
   this.helper.normalizeJSON = function(obj) {
     if (!_.isObject(obj)) { throw new Error("normalizeJSON take an object"); }
-    return JSON.stringify(obj, null, self.bbb.indent);
+    return JSON.stringify(obj, null, self.helper.getIndent());
   };
 
   this.helper.normalizeJS = function(code) {
@@ -82,7 +82,7 @@ function Generator(args, options, config) {
       output = escodegen.generate(syntax, {
         comment: true,
         format: {
-          style: self.bbb.indent
+          style: self.helper.getIndent()
         },
         quotes: "\""
       });
@@ -93,6 +93,14 @@ function Generator(args, options, config) {
     }
 
     return output;
+  };
+
+  this.helper.getIndent = function() {
+    if (self.bbb.indent.type === "space") {
+      return (new Array(self.bbb.indent.qte)).join(" ");
+    } else {
+      return "\t";
+    }
   };
 
   // Get existing configurations

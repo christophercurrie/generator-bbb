@@ -98,6 +98,7 @@ Generator.prototype.app = function app() {
     self.dest.write(dest, code);
   });
 
+  this.dest.write("README.md", "");
   this.copy("index.html", "index.html");
   this.copy("favicon.ico", "favicon.ico");
 };

@@ -8,6 +8,7 @@ var path = require("path");
 var _ = require("lodash");
 var grunt = require("grunt");
 var BBBGenerator = require("../base/bbb-generator");
+var BBBCli = require("../base/cli");
 
 /**
  * Module exports
@@ -47,77 +48,62 @@ Generator.prototype.askFor = function askFor() {
     "\n __|_______|___ \n"
   );
 
-  var prompts = [];
+  var questions = [];
 
-  !this.bbb.name && prompts.push({
+  !this.bbb.name && questions.push({
     name: "name",
     message: "Your project name:",
     default: this.appname // Default to current folder name
   });
 
-  !this.bbb.testFramework && prompts.push({
+  !this.bbb.testFramework && questions.push({
     name: "testFramework",
-    message: "Which test framework do you want to use?" +
-      "\n 1) QUnit" +
-      "\n 2) Mocha" +
-      "\n 3) Jasmine" +
-      "\n Default: ",
-    default: "1"
+    type: "list",
+    message: "Which test framework do you want to use?",
+    choices: [ "QUnit", "Mocha", "Jasmine" ],
+    default: 1
   });
 
-  !this.bbb.packageManager && prompts.push({
+  !this.bbb.packageManager && questions.push({
     name: "packageManager",
-    message: "Which package manager do you want to use?" +
-      "\n 1) Jam" +
-      "\n 2) Bower" +
-      "\n 3) None" +
-      "\n Default: ",
-    default: "1"
+    type: "list",
+    message: "Which package manager do you want to use?",
+    choices: [ "Jam", "Bower", "None" ],
+    default: 1
   });
 
-  !this.bbb.indent && prompts.push({
+  !this.bbb.indent && questions.push({
     name: "indent",
-    message: "What about indentation?" +
-      "\n 1) Spaces (2)" +
-      "\n 2) Spaces (4)" +
-      "\n 3) Tabs" +
-      "\n Default: ",
-    default: "1"
+    type: "list",
+    message: "What about indentation?",
+    choices: [{
+      name: "Spaces (2)",
+      value: {
+        type: "space",
+        qte: 2
+      }
+    }, {
+      name: "Spaces (4)",
+      value: {
+        type: "space",
+        qte: 4
+      }
+    }, {
+      name: "Tab",
+      value: {
+        type: "tab"
+      }
+    }],
+    default: 1
   });
 
-  var testFrameworks = {
-    1: "qunit",
-    2: "mocha",
-    3: "jasmine"
-  };
-
-  var packageManagers = {
-    1: "jam",
-    2: "bower",
-    3: "none"
-  };
-
-  var indents = {
-    1: "  ",
-    3: "    ",
-    2: "\t"
-  };
-
-  this.prompt(prompts, function (err, props) {
+  BBBCli.questionPrompt(questions, function (err, props) {
     if (err) {
       return this.emit("error", err);
     }
 
-    _.each(props, function(val, name) {
-      if (name === "testFramework") {
-        this.bbb.testFramework = testFrameworks[val];
-      } else if (name === "packageManager") {
-        this.bbb.packageManager = packageManagers[val];
-      } else if (name === "indent") {
-        this.bbb.indent = indents[val];
-      } else {
-        this.bbb[name] = val;
-      }
+    _.each(props, function(prop) {
+      this.bbb[prop.name] = prop.value;
     }, this);
 
     this.pkg.name = this.bbb.name;
